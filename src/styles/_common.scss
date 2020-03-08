@@ -1,0 +1,23 @@
+
+* {
+  box-sizing: border-box;
+}
+body {
+  font-size: $fontSize;
+  line-height: 1.5;
+  margin: 0;
+}
+html, body {
+    height: 100%;
+}
+
+#app {
+  min-height: 100%;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+}
+
+
+
+
+

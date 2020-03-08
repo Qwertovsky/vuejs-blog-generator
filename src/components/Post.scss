@@ -1,0 +1,47 @@
+.post {
+  max-width: $postWidth;
+  padding: 20px;
+
+  .post_title {
+    font-weight: bold;
+  }
+  .post_meta {
+  }
+  .post_content {
+
+    :not(pre) > code {
+      padding: 0.3rem;
+      font-size: 0.8em;
+      background-color: darken(white, 5%);
+      border-radius: 3px;
+      white-space: nowrap;
+    }
+
+    pre[class*="language-"] {
+      position: relative;
+
+      &.has_file_name {
+        padding-top: 30px;
+      }
+
+      .file_name {
+        display: block;
+        position: absolute;
+        top: 0px;
+        left: 0px;
+        width: fit-content;
+        padding: 0.2rem;
+        font-family: monospace;
+        background-color: white;
+        color: black;
+        border: 1px solid;
+        
+      }
+    }
+
+    blockquote {
+      font-style: italic;
+    }
+
+  }
+}

@@ -1,0 +1,11 @@
+#posts {
+  .post_wrap {
+  }
+  .pagination {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    max-width: $postWidth;
+    padding: 25px;
+    font-weight: bold;
+  }
+}
