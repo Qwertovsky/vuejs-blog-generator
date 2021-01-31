@@ -1,12 +1,7 @@
 <template>
   <div class="post">
     <div class="post_title">
-      <a v-if="outbound" :href="postUrl" target="_blank">
-        {{ title }}
-        <OutLink />
-      </a>
-      <router-link v-else-if="postUrl" :to="postUrl" target="_blank">{{ title }}</router-link>
-      <span v-else>{{title}}</span>
+      <LinkToPost :text="title" :outbound="outbound" :url="postUrl" />
     </div>
     <div class="post_meta">
       {{fm.date}}
@@ -14,19 +9,22 @@
     </div>
     <div class="post_content">
       <component :is="contentComponent"></component>
+      <LinkToPost v-if="readMore"
+        text="read more" :outbound="outbound" :url="postUrl" />
     </div>
+    
   </div>
 </template>
 
 <script>
 const posts = JSON.parse(process.env.VUE_APP_POSTS);
 import MetaTags from "@/components/MetaTags.vue";
-import OutLink from "@/components/OutLink.vue";
+import LinkToPost from "@/components/LinkToPost.vue";
 
 export default {
   components: {
     MetaTags,
-    OutLink
+    LinkToPost
   },
   props: {
     postData: Object,
@@ -87,6 +85,9 @@ export default {
     outbound() {
       return this.fm.url;
     },
+    readMore() {
+      return this.outbound || (this.post.more && !this.more);
+    }
   }
 }
 </script>

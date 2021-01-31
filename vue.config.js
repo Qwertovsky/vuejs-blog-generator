@@ -78,8 +78,12 @@ fs.readdirSync(POSTS_DIR, {withFileTypes: true})
   })
   .forEach((file) => {
     const fileName = file.name;
-    const fmData = grayMatter.read(POSTS_DIR + fileName, {});
+    const fmData = grayMatter.read(POSTS_DIR + fileName, {excerpt_separator: "<!-- more -->"});
+    if (fmData.data.draft) {
+      return;
+    }
     fmData.data.slug = fileName;
+    fmData.data.more = !!(fmData.excerpt && fmData.excerpt.trim());
     allPosts.push(fmData.data);
     
     const slug = fileName;
@@ -113,11 +117,12 @@ tags.forEach((t) => {
   const tagPosts = allPosts.filter((p) => p.tags && p.tags.indexOf(t.name) >= 0);
   routes.push(...createPagesForPosts(tagPosts, t.path + "/"));
 });
+console.log(routes);
 
 module.exports = {
   runtimeCompiler: true,
   productionSourceMap: false,
-  configureWebpack: () => {
+  configureWebpack: config => {
 
     const blogConfig = {
       resolve: {

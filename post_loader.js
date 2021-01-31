@@ -14,11 +14,13 @@ prismLoadLanguages([
   "scss",
   "md",
   "js",
+  "ts",
   "java",
   "bash",
   "rust",
   "json",
-  "properties"
+  "properties",
+  "sql"
 ]);
 
 function getLangCodeFromExtension (extension) {
@@ -96,12 +98,17 @@ module.exports = function(source) {
   const fileName = resourcePath.substring(resourcePath.lastIndexOf("/") + 1);
 
   let content;
-  if (/more=true/.test(resourceQuery)) {
+  const more = /more=true/.test(resourceQuery)
+  if (more) {
     content = fmData.content;
   } else {
     content = fmData.excerpt;
+    if (!content && !fmData.data.description) {
+      content = fmData.content;
+    }
   }
-  if (content) { // maybe null if no excerpt
+  
+  if (content) { // maybe null if no excerpt and description is defined
     if (fileName.endsWith(".md")) {
       content = markdown.render(content);
     } else if (fileName.endsWith(".html")) {
