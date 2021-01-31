@@ -20,6 +20,7 @@
 const posts = JSON.parse(process.env.VUE_APP_POSTS);
 import MetaTags from "@/components/MetaTags.vue";
 import LinkToPost from "@/components/LinkToPost.vue";
+import { h } from 'vue';
 
 export default {
   components: {
@@ -66,8 +67,8 @@ export default {
         };
       } else {
         return {
-          render(createElement) {
-            return createElement("div", "Rendering..");
+          render() {
+            return h("div", "Rendering..");
           }
         };
       }

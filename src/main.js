@@ -1,17 +1,14 @@
-import Vue from "vue";
+import { createApp } from "vue";
 import App from "./App.vue";
 import router from "./router";
 
 import OutLink from "@/components/OutLink.vue";
 
-Vue.component("OutLink", OutLink);
+const app = createApp(App);
 
-Vue.config.productionTip = false;
-
-new Vue({
-  router,
-  render: function (h) { return h(App) }
-}).$mount("#app");
+app.component("OutLink", OutLink);
+app.use(router);
+app.mount("#app");
 
 window.addEventListener("load", () => {
   if (window.__PRERENDER_INJECTED && window.__PRERENDER_INJECTED.prerendered) {

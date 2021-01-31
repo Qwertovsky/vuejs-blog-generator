@@ -1,5 +1,5 @@
 import Vue from "vue";
-import VueRouter from "vue-router";
+import { createRouter, createWebHistory } from "vue-router";
 
 import Index from "@/components/Index.vue";
 import Tags from "@/components/Tags.vue";
@@ -9,8 +9,6 @@ import About from "@/views/About.vue";
 import NotFound from "@/views/NotFound.vue";
 
 const posts = JSON.parse(process.env.VUE_APP_POSTS);
-
-Vue.use(VueRouter)
 
 const routes = [
   {
@@ -49,13 +47,16 @@ const routes = [
     path: "/404",
     name: "NotFound",
     component: NotFound,
-    alias: "*"
+  },
+  {
+    path: "/:pathMatch(.*)*",
+    name: "All",
+    component: NotFound
   }
 ];
 
-const router = new VueRouter({
-  mode: "history",
-  base: process.env.BASE_URL,
+const router = createRouter({
+  history: createWebHistory(process.env.BASE_URL),
   routes
 });
 router.beforeEach((to, from, next) => {
