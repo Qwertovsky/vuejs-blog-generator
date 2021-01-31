@@ -116,6 +116,7 @@ tags.forEach((t) => {
 
 module.exports = {
   runtimeCompiler: true,
+  productionSourceMap: false,
   configureWebpack: () => {
 
     const blogConfig = {
