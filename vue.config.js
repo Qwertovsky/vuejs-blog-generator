@@ -22,12 +22,12 @@ if (BLOG_BASE != "/") {
   PRERENDER_SERVER.proxy[BLOG_BASE].pathRewrite[`^${BLOG_BASE}`] = "/";
 }
 
-const postNumberRe = /^--post-number=(\d+)$/;
+const postNumberRe = /^--post-number=([\d.]+)$/;
 const postDateRe = /^--post-date=([\d-]+)$/;
 let postNumberArg = process.argv.find((arg) => postNumberRe.test(arg));
 let postDateArg = process.argv.find((arg) => postDateRe.test(arg));
 if (postNumberArg) {
-  postNumberArg = postNumberArg.replace(postNumberRe, "$1").padStart(5, "0");
+  postNumberArg = postNumberArg.replace(postNumberRe, "$1");
 } else if (postDateArg) {
   postDateArg = new Date(postDateArg.replace(postDateRe, "$1"));
 }
@@ -47,7 +47,11 @@ function createPagesForPosts (posts, base) {
           posts.length - (i - 1) * POSTS_PER_PAGE);
       let existsonpage = false;
       if (postNumberArg) {
-        existsonpage = pagePosts.some((p) => p.slug.startsWith(postNumberArg));
+        existsonpage = pagePosts.some((p) => {
+          return p.slug
+            .replace(/^0+/, '')
+            .startsWith(postNumberArg);
+        });
       } else if (postDateArg) {
         existsonpage = pagePosts.some((p) => new Date(p.date) >= postDateArg);
       }
@@ -81,7 +85,7 @@ fs.readdirSync(POSTS_DIR, {withFileTypes: true})
     const slug = fileName;
     const date = new Date(fmData.data.date);
     if (!postNumberArg && !postDateArg
-      || postNumberArg && slug.startsWith(postNumberArg)
+      || postNumberArg && slug.replace(/^0+/, '').startsWith(postNumberArg)
       || postDateArg && date >= postDateArg) {
       if (!fmData.data.url) {
         routes.push("/posts/" + slug);
