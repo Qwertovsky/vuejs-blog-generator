@@ -6,15 +6,17 @@
   </span>
 </template>
 
-<script>
-export default {
-  props: {
-    tags: Array
-  },
-  methods: {
-    tagUrl(tag) {
-      return "/tag/" + tag;
-    }
+<script setup lang="ts">
+  import { defineProps } from "vue";
+  import type { PropType } from "vue";
+
+  const props = defineProps({
+    tags: Object as PropType<string[]>
+  });
+  
+  function tagUrl(tag: string) {
+    return "/tag/" + tag;
   }
-}
+  
+
 </script>

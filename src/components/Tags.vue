@@ -6,12 +6,19 @@
   </ul>
 </template>
 
-<script>
-export default {
-  computed: {
-    tags() {
-      return JSON.parse(process.env.VUE_APP_TAGS);
-    }
-  }
-}
+<script setup lang="ts">
+  import { computed, type ComputedRef } from "vue";
+  import { tags as allTags } from "virtual:posts";
+  import type TagClass from '@/model/Tag';
+  import { useHead } from '@vueuse/head';
+
+  useHead({
+    title: 'Tags | Blog'
+  })
+  
+  const tags = computed<TagClass[]>(() => {
+      return allTags;
+    });
+  
+
 </script>

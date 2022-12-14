@@ -4,11 +4,14 @@
       <LinkToPost :text="title" :outbound="outbound" :url="postUrl" />
     </div>
     <div class="post_meta">
-      {{fm.date}}
+      {{postDate}}
       <MetaTags :tags="fm.tags" />
     </div>
+    
     <div class="post_content">
-      <component :is="contentComponent"></component>
+      
+      <component :is="contentComponent" :more="more"></component>
+      
       <LinkToPost v-if="readMore"
         text="read more" :outbound="outbound" :url="postUrl" />
     </div>
@@ -16,79 +19,110 @@
   </div>
 </template>
 
-<script>
-const posts = JSON.parse(process.env.VUE_APP_POSTS);
-import MetaTags from "@/components/MetaTags.vue";
-import LinkToPost from "@/components/LinkToPost.vue";
-import { h } from 'vue';
+<script setup lang="ts">
+  import type PostClass from '@/model/Post';
 
-export default {
-  components: {
-    MetaTags,
-    LinkToPost
-  },
-  props: {
-    postData: Object,
+  import MetaTags from "@/components/MetaTags.vue";
+  import LinkToPost from "@/components/LinkToPost.vue";
+  
+  import { h, reactive, shallowRef, defineProps, computed, defineComponent, defineAsyncComponent } from "vue";
+  import type { PropType } from "vue";
+  import { useRoute, onBeforeRouteUpdate } from 'vue-router';
+  import { useHead } from '@vueuse/head';
+  import { posts } from 'virtual:posts';
+  
+
+  const props = defineProps( {
+    postData: {
+      type: Object as PropType<PostClass>,
+      required: true
+    },
     more: {
       type: Boolean,
       default: true
     }
-  },
-  data() {
-    let post = this.postData;
-    if (!post) {
-      const slug = this.$route.params["slug"];
-      post = posts.find((p) => p.slug == slug);
+  });
+
+  const content = shallowRef<string | null>("Rendering..");
+
+  const route = useRoute();
+  onBeforeRouteUpdate((to, from) => {
+    if (!to.params.slug) {
+      return true;
     }
-    let contentPromise;
-    if (this.more) {
-      contentPromise = import("@PostsDir/" + post.slug + "?more=true");
-    } else {
-      contentPromise = import("@PostsDir/" + post.slug);
-    }
-    contentPromise.then(({default: html}) => { this.content = html; });
-    return {
-      post,
-      content: null,
-      excerpt: null
-    }
-  },
-  computed: {
-    title() {
-      return this.fm && this.fm.title;
-    },
-    fm() {
-      return this.post;
-    },
-    contentComponent() {
-      if (this.content) {
-        return {
-          template: this.content
-        };
-      } else {
-        return {
-          render() {
-            return h("div", "Rendering..");
-          }
-        };
-      }
-    },
-    postUrl() {
-      let postUrl = "/posts/" + this.fm.slug;
-      const slug = this.$route.params["slug"];
-      if (slug) {
-        postUrl = null;
-      } else if (this.fm.url) {
-        postUrl = this.fm.url;
-      }
-      return postUrl;
-    },
-    outbound() {
-      return this.fm.url;
-    },
-    readMore() {
-      return this.outbound || (this.post.more && !this.more);
-    }
+    post = findPostBySlug(<string>to.params.slug);
+    loadPostContent();
+    return true;
+  });
+
+  let post: PostClass | undefined = props.postData;
+    
+  if (!post) {
+    const slug = <string>route.params["slug"];
+    post = findPostBySlug(slug);
   }
-}
+
+  useHead(computed(() => {
+      if (!route.params.slug) {
+        // skip for index pages
+        return {};
+      }
+      return {
+        title: post!.title + " | Blog"
+      };
+    })
+  );
+
+  loadPostContent();
+
+  function findPostBySlug(slug: string): PostClass {
+    return posts.find((p:  PostClass) => p.slug == slug) || <PostClass>{};
+  }
+  
+  function loadPostContent() {
+      content.value = defineAsyncComponent(() => import("../../posts/" + post!.fileName + ".md"));
+  }
+  
+  
+  const title = computed(() => {
+      return fm.value && fm.value.title;
+    });
+
+  const postDate = computed<string>(() => {
+    const d: string = fm.value.date;
+    return d.substring(0, 10);
+  });
+
+  const fm = computed(() => {
+      return post || <PostClass>{};
+    });
+
+  const contentComponent = computed(() => {
+    return content.value;
+    
+  });
+
+  const postUrl = computed<string | undefined>(() => {
+    if (!fm.value) {
+      return undefined;
+    }
+    let postUrl: string | undefined = "/posts/" + fm.value.slug;
+    const slug = route.params["slug"];
+    if (slug) {
+      postUrl = undefined;
+    } else if (fm.value.url) {
+      postUrl = fm.value.url;
+    }
+    return postUrl;
+  });
+
+  const outbound = computed(() => {
+      return fm.value && fm.value.url != null;
+    });
+
+  const readMore = computed(() => {
+      return outbound.value || (post && post.more && !props.more);
+    });
+  
+
 </script>

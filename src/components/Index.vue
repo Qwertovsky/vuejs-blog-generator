@@ -19,89 +19,122 @@
   </div>
 </template>
 
-<script>
-const allPosts = JSON.parse(process.env.VUE_APP_POSTS);
-import Post from "@/components/Post.vue";
+<script setup lang="ts">
+  import Post from "@/components/Post.vue";
+  import { computed } from 'vue';
+  import { useRoute, onBeforeRouteUpdate } from 'vue-router';
+  import type PostClass from "@/model/Post";
+  import { posts as allPosts } from 'virtual:posts';
+  import { useHead } from '@vueuse/head';
 
-const POSTS_PER_PAGE = process.env.VUE_APP_POSTS_PER_PAGE;
+  const POSTS_PER_PAGE: number = import.meta.env.VITE_POSTS_PER_PAGE;
+  
+  const route = useRoute();
 
-export default {
-  computed: {
-    hasPrev() {
-      return !(this.maxIndex == 1 || this.index == 1)
-    },
-    hasNext() {
-      return !!this.index && this.index != this.maxIndex;
-    },
-    prevUrl() {
-      let url = null;
-      
-      if (this.maxIndex == 1 || this.index == 1) {
-        return null;
+  useHead({
+    title: computed(() => {
+      let title = "Blog";
+      const index = Number(route.params["index"]);
+      const tag = route.params["tag"];
+      if (index) {
+        title = `Page ${index} | ${title}`;
       }
-      if (this.tag) {
-        url = `/tag/${this.tag}/page/${this.index - 1}`;
+      if (tag) {
+        title = `Tag ${tag} | ${title}`;
+      }
+      return title;
+    })
+  });
+
+  onBeforeRouteUpdate((to, from) => {
+    return true;
+  });
+  
+    const hasPrev = computed(() => {
+      return !(maxIndex.value == 1 || index.value == 1)
+    });
+
+    const hasNext = computed(() => {
+      return !!index.value && index.value != maxIndex.value;
+    });
+
+    const prevUrl = computed(() => {
+      let url = '';
+      
+      if (!hasPrev) {
+        return '';
+      }
+      if (tag.value) {
+        url = `/tag/${tag.value}/page/${index.value - 1}`;
       } else {
-        url = `/page/${this.index - 1}`;
+        url = `/page/${index.value - 1}`;
       }
       return url;
-    },
-    nextUrl() {
-      let url = null;
-      if (this.index == this.maxIndex) {
-        return null;
+    });
+
+    const nextUrl = computed(() => {
+      let url = '';
+      if (!hasNext) {
+        return '';
       }
-      if (this.index == this.maxIndex - 1) {
-        if (this.tag) {
-          url = `/tag/${this.tag}`;
+      if (index.value == maxIndex.value - 1) {
+        if (tag.value) {
+          url = `/tag/${tag.value}`;
         } else {
           url = `/`;
         } 
       } else {
-        if (this.tag) {
-          url = `/tag/${this.tag}/page/${this.index + 1}`;
+        if (tag.value) {
+          url = `/tag/${tag.value}/page/${index.value + 1}`;
         } else {
-          url = `/page/${this.index + 1}`;
+          url = `/page/${index.value + 1}`;
         }
       }
       return url;
-    },
-    postsByTag() {
+    });
+
+    const postsByTag = computed(() => {
       let posts = allPosts
-      .filter(post => 
-        (this.tag == null
-          || post.tags
-            && post.tags.some(t => t.toLowerCase() == this.tag))
+      .filter((post: PostClass) => 
+        (tag.value == null
+          || post!.tags
+            && post!.tags.some((t: string) => t.toLowerCase() == tag.value))
       )
-      .sort((a, b) => new Date(b.date) - new Date(a.date));
+      .sort((a: PostClass, b: PostClass) => {
+        return new Date(b.date).getTime() - new Date(a.date).getTime()
+      });
       return posts;
-    },
-    tag() {
-      return this.$route.params["tag"];
-    },
-    index() {
-      let index = Number(this.$route.params["index"]);
+    });
+
+    const tag = computed(() => {
+      return route.params["tag"];
+    });
+
+    const index = computed<number>(() => {
+      let index = Number(route.params["index"]);
       if (!index) {
-        index = this.maxIndex;
+        index = maxIndex.value;
       }
       return index;
-    },
-    maxIndex() {
-      return Math.ceil(this.postsByTag.length / POSTS_PER_PAGE);
-    }, 
-    posts() {
-      let posts = this.postsByTag;
-      let index = this.index;
-      if (!index) {
-        index = this.maxIndex;
+    });
+
+    const maxIndex = computed(() => {
+      return Math.ceil(postsByTag.value.length / POSTS_PER_PAGE);
+    });
+
+    const posts = computed(() => {
+      let posts = postsByTag.value;
+      let indexCur = index.value;
+      if (!indexCur) {
+        indexCur = maxIndex.value;
       }
-      posts = posts.slice(Math.max(0, posts.length - index * POSTS_PER_PAGE),
-        posts.length - (index - 1) * POSTS_PER_PAGE);
+      posts = posts.slice(
+        Math.max(0, posts.length - indexCur * POSTS_PER_PAGE),
+        posts.length - (indexCur - 1) * POSTS_PER_PAGE
+        );
       return posts;
-    }
-  },
-  components: {
-    Post
-  }
-}
+    });
+  
+  
+
 </script>

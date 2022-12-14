@@ -1,6 +1,7 @@
 .post {
   max-width: $postWidth;
-  padding: 20px;
+  padding: 25px 20px 25px 20px;
+  margin: auto;
 
   .post_title {
     font-weight: bold;
@@ -43,5 +44,9 @@
       font-style: italic;
     }
 
+    img {
+      max-width: calc(100vw - 40px);
+      width: fit-content;
+    }
   }
 }

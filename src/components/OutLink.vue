@@ -15,3 +15,10 @@
     font-size: 0.7em;
   }
 </style>
+
+<script lang="ts">
+export default {
+  name: "OutLink"
+}
+
+</script>

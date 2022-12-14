@@ -1,5 +1,5 @@
 <template>
-  <div id="app">
+  <div id="appWrap">
     <TheHeader />
     <section id="centerPart">
       <router-view></router-view>
@@ -8,9 +8,10 @@
   </div>
 </template>
 
-<script>
-import TheHeader from "@/components/TheHeader.vue";
-import TheFooter from "@/components/TheFooter.vue";
+<script lang="ts">
+import { RouterLink, RouterView } from 'vue-router';
+import TheHeader from '@/components/TheHeader.vue';
+import TheFooter from '@/components/TheFooter.vue';
 export default {
   components: {
     TheHeader,
@@ -19,5 +20,5 @@ export default {
 }
 </script>
 <style lang="scss">
-  @import "./styles/style.scss";
+  @import './styles/style.scss';
 </style>

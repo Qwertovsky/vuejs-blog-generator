@@ -1,28 +1,23 @@
 <template>
-  <a v-if="outbound" :href="postUrl" target="_blank">
-    {{ title }}
+  <a v-if="outbound" :href="url">
+    {{ text }}
     <OutLink />
   </a>
-  <router-link v-else-if="postUrl" :to="postUrl" target="_blank">{{ title }}</router-link>
-  <span v-else>{{title}}</span>
+  <router-link v-else-if="url" :to="url">{{ text }}</router-link>
+  <span v-else>{{text}}</span>
 </template>
 
-<script>
-import OutLink from "@/components/OutLink.vue";
-export default {
-  components: {
-    OutLink
-  },
-  props: {
+<script setup lang="ts">
+  import OutLink from "@/components/OutLink.vue";
+  import { defineProps } from "vue";
+  
+  const props = defineProps({
     text: String,
-    outbound: String,
+    outbound: {
+      type: Boolean,
+      required: false
+    },
     url: String
-  },
-  data() {
-    return {
-      title: this.text,
-      postUrl: this.url
-    }
-  }
-}
+  });
+  
 </script>

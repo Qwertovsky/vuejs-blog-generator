@@ -1,5 +1,5 @@
 # Vue.js Blog Generator
-Static blog generator. Vue CLI template.
+Static blog generator. Vue 3 template.
 
 # Use
 
@@ -33,9 +33,11 @@ To build static files:
 ```
 npm run build
 ```
-To build last posts with date >= `2020-01-31`:
+
+Settings are in .env file.
+
+To build last posts with date >= `2022-01-31`:
 ```
-npm run build -- --post-date=2020-01-31
+VITE_POST_DATE=2022-01-31
 ```
 
-Read [blog post](https://qwertovsky.com/blog/posts/00023_creating_blog_with_vue.js.md) to understand how it works.

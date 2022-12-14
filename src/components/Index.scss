@@ -1,5 +1,6 @@
 #posts {
   .post_wrap {
+    border-bottom: 1px solid grey;
   }
   .pagination {
     display: grid;
@@ -7,5 +8,6 @@
     max-width: $postWidth;
     padding: 25px;
     font-weight: bold;
+    margin: auto;
   }
 }
