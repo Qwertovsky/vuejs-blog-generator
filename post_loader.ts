@@ -6,6 +6,8 @@ import escapeHtml from "escape-html";
 
 import prismLoadLanguages from "prismjs/components/";
 
+import { useExcerpt } from './utils';
+
 
 const DEFAULT_LANG = "text";
 
@@ -59,8 +61,6 @@ function parseRequest(id: string): {
   }
 }
 
-
-
 const markdown = markdownIt({
   html: true,
   highlight: highlight
@@ -95,6 +95,17 @@ markdown.use((md) => {
   }
 });
 
+function toHtml(document: string | undefined): string | undefined {
+  if (document) {
+    document = markdown.render(document);
+    document = document
+    .replace(/\bimport\.meta/g, 'import.<wbr/>meta')
+    .replace(/\bprocess\.env/g, 'process.<wbr/>env');
+    document = oneRootElement(document);
+    return document;
+  }
+}
+
 export default function postLoader() {
   
   return {
@@ -119,7 +130,7 @@ export default function postLoader() {
 
         let { filename } = parseRequest(resolvedId);
 
-        const fmData = grayMatter.read(filename, { excerpt_separator: "<!-- more -->"});
+        const fmData = grayMatter.read(filename, { excerpt: useExcerpt});
 
         // skip drafts - rollup-dynamic-import loads all files from ./posts
         if (fmData.data.draft == true) {
@@ -134,21 +145,10 @@ export default function postLoader() {
           excerpt = fmData.excerpt;
         } else if (fmData.data.description) {
           excerpt = fmData.data.description;
-        } else {
-          excerpt = content;
         }
         
-        excerpt = markdown.render(excerpt);
-        content = markdown.render(content);
-
-        excerpt = excerpt
-          .replace(/\bimport\.meta/g, 'import.<wbr/>meta')
-          .replace(/\bprocess\.env/g, 'process.<wbr/>env');
-        content = content
-          .replace(/\bimport\.meta/g, 'import.<wbr/>meta')
-          .replace(/\bprocess\.env/g, 'process.<wbr/>env');
-        excerpt = oneRootElement(excerpt);
-        content = oneRootElement(content);
+        excerpt = toHtml(excerpt);
+        content = toHtml(content)!;
         
         return {
           code: JSON.stringify({excerpt, content}),
@@ -170,8 +170,8 @@ export default function postLoader() {
           code: `
           <template>
             <div>
-              <div v-if="more">${source.content}</div>
-              <div v-else>${source.excerpt}</div>
+              <div v-if="excerpt">${source.excerpt}</div>
+              <div v-else>${source.content}</div>
             </div>
           </template>
           
@@ -179,7 +179,7 @@ export default function postLoader() {
             import { defineProps } from "vue";
 
             let props = defineProps({
-              more: {
+              excerpt: {
                 type: Boolean,
                 default: false
               }

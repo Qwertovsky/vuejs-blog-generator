@@ -10,7 +10,7 @@
     
     <div class="post_content">
       
-      <component :is="contentComponent" :more="more"></component>
+      <component :is="contentComponent" :excerpt="excerpt"></component>
       
       <LinkToPost v-if="readMore"
         text="read more" :outbound="outbound" :url="postUrl" />
@@ -35,7 +35,7 @@
   const props = defineProps( {
     postData: {
       type: Object as PropType<PostClass>,
-      required: true
+      required: false
     },
     more: {
       type: Boolean,
@@ -121,8 +121,20 @@
     });
 
   const readMore = computed(() => {
-      return outbound.value || (post && post.more && !props.more);
-    });
+    if (props.more) {
+      // show full post
+      return false;
+    }
+    return outbound.value || (post && post.more);
+  });
+
+  const excerpt = computed(() => {
+    if (props.more) {
+      // show full post
+      return false;
+    }
+    return post && post.more;
+  });
   
 
 </script>

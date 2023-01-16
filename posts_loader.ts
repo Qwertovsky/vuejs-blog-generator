@@ -2,6 +2,7 @@ import grayMatter from "gray-matter";
 import PostClass from './src/model/Post';
 import type TagClass from './src/model/Tag';
 import fs from "fs";
+import { useExcerpt } from './utils';
 
 
 
@@ -76,7 +77,7 @@ export default function postsVirtual () {
         })
         .forEach((file) => {
           const fileName = file.name;
-          const fmData = grayMatter.read(POSTS_DIR + fileName, {excerpt_separator: "<!-- more -->"});
+          const fmData = grayMatter.read(POSTS_DIR + fileName, {excerpt: useExcerpt});
           if (fmData.data.draft) {
             return;
           }
@@ -84,12 +85,11 @@ export default function postsVirtual () {
           post.slug = fileName.replace(/\./g, '_');
           post.fileName = fileName.replace(/\.(md)$/g, '');
           post.extension = fileName.substring(post.fileName.length);
-          post.more = !!(fmData.excerpt && fmData.excerpt.trim() || fmData.data.description);
+          post.more = !!(fmData.excerpt && fmData.excerpt.trim());
           post.date = fmData.data.date;
           post.tags = fmData.data.tags;
           post.title = fmData.data.title;
           post.url = fmData.data.url;
-          post.description = fmData.data.description;
           // console.log(post);
           allPosts.push(post);
           
@@ -111,7 +111,9 @@ export default function postsVirtual () {
 
       postTags = postTags.flat().map((tag) => tag.toLowerCase());
       postTags = [...new Set(postTags)];
-      allTags = postTags.map((t) => {
+      allTags = postTags
+      .sort()
+      .map((t) => {
         return {
           name: t,
           path: "/tag/" + t
@@ -119,8 +121,10 @@ export default function postsVirtual () {
       });
 
       allRoutes.push("/tag");
-      allTags.forEach((t) => {
-        const tagPosts = allPosts.filter((p) => p.tags && p.tags.indexOf(t.name) >= 0);
+      allTags.forEach((t: TagClass) => {
+        const tagPosts = allPosts.filter((p) => {
+          return p.tags && p.tags.some((postTag) => postTag.toLowerCase() == t.name);
+        });
         allRoutes.push(...createPagesForPosts(tagPosts, t.path + "/", config.env));
       });
 

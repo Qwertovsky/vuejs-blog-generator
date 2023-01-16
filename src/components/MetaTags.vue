@@ -15,7 +15,7 @@
   });
   
   function tagUrl(tag: string) {
-    return "/tag/" + tag;
+    return "/tag/" + tag.toLowerCase();
   }
   
 
