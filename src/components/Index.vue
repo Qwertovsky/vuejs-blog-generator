@@ -33,7 +33,7 @@
 
   useHead({
     title: computed(() => {
-      let title = "Blog";
+      let title = import.meta.env.VITE_BLOG_NAME;
       const index = Number(route.params["index"]);
       const tag = route.params["tag"];
       if (index) {

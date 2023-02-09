@@ -25,7 +25,7 @@
   import MetaTags from "@/components/MetaTags.vue";
   import LinkToPost from "@/components/LinkToPost.vue";
   
-  import { h, reactive, shallowRef, defineProps, computed, defineComponent, defineAsyncComponent } from "vue";
+  import { h, shallowRef, computed, defineComponent, defineAsyncComponent } from "vue";
   import type { PropType } from "vue";
   import { useRoute, onBeforeRouteUpdate } from 'vue-router';
   import { useHead } from '@vueuse/head';
@@ -43,7 +43,9 @@
     }
   });
 
-  const content = shallowRef<string | null>("Rendering..");
+  let content = shallowRef(defineComponent({
+    render: () => h('div', {innerHTML: 'Rendering...'})
+  }));
 
   const route = useRoute();
   onBeforeRouteUpdate((to, from) => {
@@ -55,11 +57,13 @@
     return true;
   });
 
-  let post: PostClass | undefined = props.postData;
+  let post: PostClass;
     
-  if (!post) {
+  if (!props.postData) {
     const slug = <string>route.params["slug"];
     post = findPostBySlug(slug);
+  } else {
+    post = props.postData;
   }
 
   useHead(computed(() => {
@@ -68,19 +72,19 @@
         return {};
       }
       return {
-        title: post!.title + " | Blog"
+        title: post.title + " | " + import.meta.env.VITE_BLOG_NAME
       };
     })
   );
 
-  loadPostContent();
+  
 
   function findPostBySlug(slug: string): PostClass {
     return posts.find((p:  PostClass) => p.slug == slug) || <PostClass>{};
   }
   
   function loadPostContent() {
-      content.value = defineAsyncComponent(() => import("../../posts/" + post!.fileName + ".md"));
+    content.value = defineAsyncComponent(post.component);
   }
   
   
@@ -94,7 +98,7 @@
   });
 
   const fm = computed(() => {
-      return post || <PostClass>{};
+      return post;
     });
 
   const contentComponent = computed(() => {
@@ -125,7 +129,7 @@
       // show full post
       return false;
     }
-    return outbound.value || (post && post.more);
+    return outbound.value || post.more;
   });
 
   const excerpt = computed(() => {
@@ -133,8 +137,9 @@
       // show full post
       return false;
     }
-    return post && post.more;
+    return post.more;
   });
   
+  loadPostContent();
 
 </script>

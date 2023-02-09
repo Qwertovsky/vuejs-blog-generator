@@ -1,5 +1,3 @@
-import { createRouter, createWebHistory } from "vue-router";
-
 import Index from '@/components/Index.vue'
 import Tags from '@/components/Tags.vue'
 import Post from '@/components/Post.vue'

@@ -1,13 +1,9 @@
-
+import { useExcerpt, toHtml } from './utils';
 import grayMatter from "gray-matter";
 import markdownIt from "markdown-it";
 import prism from "prismjs";
 import escapeHtml from "escape-html";
-
 import prismLoadLanguages from "prismjs/components/";
-
-import { useExcerpt } from './utils';
-
 
 const DEFAULT_LANG = "text";
 
@@ -27,7 +23,7 @@ prismLoadLanguages([
 ]);
 
 function getLangCodeFromExtension (extension: string) {
-  const extensionMap = {
+  const extensionMap: {[key in string]: string} = {
     vue: "html",
     rs: "rust"
   }
@@ -47,18 +43,6 @@ function highlight(str: string, lang = DEFAULT_LANG) {
 
 function oneRootElement(html: string) {
   return `<div>${html}</div>`;
-}
-
-function parseRequest(id: string): {
-  filename: string
-  query: URLSearchParams
-} {
-  const [filename, rawQuery] = id.split(`?`, 2)
-  const query: URLSearchParams = new URLSearchParams(rawQuery);
-  return {
-    filename,
-    query
-  }
 }
 
 const markdown = markdownIt({
@@ -95,6 +79,18 @@ markdown.use((md) => {
   }
 });
 
+function parseRequest(id: string): {
+  filename: string
+  query: URLSearchParams
+} {
+  const [filename, rawQuery] = id.split(`?`, 2)
+  const query: URLSearchParams = new URLSearchParams(rawQuery);
+  return {
+    filename,
+    query
+  }
+}
+
 function toHtml(document: string | undefined): string | undefined {
   if (document) {
     document = markdown.render(document);
@@ -128,28 +124,15 @@ export default function postLoader() {
           return null;
         }
 
-        let { filename } = parseRequest(resolvedId);
-
+        const {filename} = parseRequest(resolvedId);
         const fmData = grayMatter.read(filename, { excerpt: useExcerpt});
 
-        // skip drafts - rollup-dynamic-import loads all files from ./posts
-        if (fmData.data.draft == true) {
-          return {
-            code: `{}`
-          }
-        }
-        
         let content = fmData.content;
-        let excerpt;
-        if (fmData.excerpt) {
-          excerpt = fmData.excerpt;
-        } else if (fmData.data.description) {
-          excerpt = fmData.data.description;
-        }
+        let excerpt = fmData.excerpt;
         
         excerpt = toHtml(excerpt);
         content = toHtml(content)!;
-        
+      
         return {
           code: JSON.stringify({excerpt, content}),
           map: null
@@ -176,8 +159,7 @@ export default function postLoader() {
           </template>
           
           <script setup>
-            import { defineProps } from "vue";
-
+            
             let props = defineProps({
               excerpt: {
                 type: Boolean,

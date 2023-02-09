@@ -7,13 +7,13 @@
 </template>
 
 <script setup lang="ts">
-  import { computed, type ComputedRef } from "vue";
+  import { computed } from "vue";
   import { tags as allTags } from "virtual:posts";
   import type TagClass from '@/model/Tag';
   import { useHead } from '@vueuse/head';
 
   useHead({
-    title: 'Tags | Blog'
+    title: 'Tags | ' + import.meta.env.VITE_BLOG_NAME
   })
   
   const tags = computed<TagClass[]>(() => {

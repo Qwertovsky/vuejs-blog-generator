@@ -9,6 +9,9 @@ export function useExcerpt (file: any, options: any): any {
     }
     if (idx !== -1) {
       file.excerpt = file.content.slice(0, idx);
+    } else if (file.data.description) {
+      file.excerpt = file.data.description;
     }
+
     return file;
-  }
+}

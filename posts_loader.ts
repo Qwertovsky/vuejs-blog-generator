@@ -4,8 +4,6 @@ import type TagClass from './src/model/Tag';
 import fs from "fs";
 import { useExcerpt } from './utils';
 
-
-
 const virtualModuleId: string = 'virtual:posts';
 const resolvedVirtualModuleId = '\0' + virtualModuleId
 let allPosts: PostClass[] = [];
@@ -19,7 +17,7 @@ function createPagesForPosts(posts: PostClass[], base: string, env: any) {
   let postDateArg: string = env.VITE_POST_DATE;
 
   const maxIndex = Math.ceil(posts.length / POSTS_PER_PAGE);
-   if (!postDateArg && !postNumberArg) {
+  if (!postDateArg && !postNumberArg) {
     for (let i = 1; i < maxIndex; i++) {
       pages.push(base + "page/" + i);
     }
@@ -82,7 +80,8 @@ export default function postsVirtual () {
             return;
           }
           const post: PostClass = new PostClass();
-          post.slug = fileName.replace(/\./g, '_');
+          post.path = POSTS_DIR + fileName;
+          post.slug = fileName.replace(/[\.]/g, '_');
           post.fileName = fileName.replace(/\.(md)$/g, '');
           post.extension = fileName.substring(post.fileName.length);
           post.more = !!(fmData.excerpt && fmData.excerpt.trim());
@@ -90,7 +89,6 @@ export default function postsVirtual () {
           post.tags = fmData.data.tags;
           post.title = fmData.data.title;
           post.url = fmData.data.url;
-          // console.log(post);
           allPosts.push(post);
           
           const slug = post.slug;
@@ -106,7 +104,7 @@ export default function postsVirtual () {
           }
         });
       
-      // console.log(allPosts);
+      
       allRoutes.push(...createPagesForPosts(allPosts, "/", config.env));
 
       postTags = postTags.flat().map((tag) => tag.toLowerCase());
@@ -142,11 +140,36 @@ export default function postsVirtual () {
 
     load (resolvedId: string) {
       if (resolvedId === resolvedVirtualModuleId) {
-        return `
-        export const posts = ${JSON.stringify(allPosts)};
-        export const tags = ${JSON.stringify(allTags)};
-        export const routes = ${JSON.stringify(allRoutes)};
-        `;
+        const makeName = (slug: string) => slug.replace(/[-]/g, '_');
+        const makeComponentName = (slug: string) => 'PostComponent_' + makeName(slug);
+        const makePostVarName = (slug: string) => 'post_' + makeName(slug);
+
+        let imports = '';
+        for(let post of allPosts) {
+          const componentName = makeComponentName(post.slug);
+          imports = imports + `
+            const ${componentName} = () => import('${post.path}');
+          `;
+        }
+
+        let addComponentToPost = 'const allPosts = [];';
+        for(let post of allPosts) {
+          const postVarName = makePostVarName(post.slug);
+          addComponentToPost = addComponentToPost + `
+            const ${postVarName} = ${JSON.stringify(post)};
+            ${postVarName}.component = ${makeComponentName(post.slug)};
+            allPosts.push(${postVarName});
+          `;
+        }
+        return {
+          code: `
+            ${imports}
+            ${addComponentToPost}
+            export const posts = allPosts;
+            export const tags = ${JSON.stringify(allTags)};
+            export const routes = ${JSON.stringify(allRoutes)};
+            `
+        };
       }
     }
   }

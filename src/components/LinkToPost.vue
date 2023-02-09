@@ -9,7 +9,6 @@
 
 <script setup lang="ts">
   import OutLink from "@/components/OutLink.vue";
-  import { defineProps } from "vue";
   
   const props = defineProps({
     text: String,
