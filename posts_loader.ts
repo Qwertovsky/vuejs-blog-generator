@@ -76,7 +76,7 @@ export default function postsVirtual () {
         .forEach((file) => {
           const fileName = file.name;
           const fmData = grayMatter.read(POSTS_DIR + fileName, {excerpt: useExcerpt});
-          if (fmData.data.draft) {
+          if (fmData.data.draft && !config.env.DEV) {
             return;
           }
           const post: PostClass = new PostClass();
@@ -88,6 +88,9 @@ export default function postsVirtual () {
           post.date = fmData.data.date;
           post.tags = fmData.data.tags;
           post.title = fmData.data.title;
+          if (fmData.data.draft) {
+            post.title = '[DRAFT] '+ post.title;
+          }
           post.url = fmData.data.url;
           allPosts.push(post);
           
