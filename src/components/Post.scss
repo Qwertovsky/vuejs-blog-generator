@@ -18,8 +18,24 @@
       white-space: nowrap;
     }
 
-    pre[class*="language-"] {
+    %take_all_width {
+      display: block;
       position: relative;
+      max-width: calc(100vw - 40px);
+      width: fit-content;
+      margin-left: 50%;
+      transform: translateX(-50%);
+    }
+
+    img {
+      @extend %take_all_width;
+      box-shadow: 0 2px 3px 0 rgba(0, 0, 0, 0.3);
+    }
+
+    pre[class*="language-"] {
+      @extend %take_all_width;
+      min-width: 100%;
+      font-size: 0.9rem;
 
       &.has_file_name {
         padding-top: 30px;
@@ -41,7 +57,18 @@
     }
 
     blockquote {
-      font-style: italic;
+      @extend %take_all_width;
+      min-width: 100%;
+      border-left: 5px double gray;
+      p {
+        padding: 10px;
+        padding-left: 30px;
+        font-style: italic;
+      }
+      pre code {
+        border-left: none;
+      }
+      
     }
 
     img {
