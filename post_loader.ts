@@ -1,4 +1,4 @@
-import { useExcerpt, toHtml } from './utils';
+import { useExcerpt } from './utils';
 import grayMatter from "gray-matter";
 import markdownIt from "markdown-it";
 import prism from "prismjs";
@@ -19,7 +19,9 @@ prismLoadLanguages([
   "rust",
   "json",
   "properties",
-  "sql"
+  "sql",
+  "javastacktrace",
+  "log"
 ]);
 
 function getLangCodeFromExtension (extension: string) {
@@ -56,15 +58,16 @@ markdown.use((md) => {
 
     let lang = DEFAULT_LANG;
     let fileName;
+    
     const infos = token.info.trim().split(" ");
     if (infos.length > 0) {
       lang = infos[0];
-      const fileNameInfo = infos.find((i) => i.startsWith("file_name"));
-      if (fileNameInfo) {
-        fileName = fileNameInfo.replace(/^file_name="(.*)"$/g, "$1");
-      }
     }
-
+    const filenameTokens = token.info.match(/file_name=[\"\'](.+)[\"\']/);
+    if (filenameTokens) {
+      fileName = filenameTokens[1];
+    }
+   
     const code = highlight(token.content, lang);
     let className = `language-${lang}`;
     if (fileName) {
@@ -77,6 +80,7 @@ markdown.use((md) => {
     result += `<code class="language-${lang}">${code}</code></pre>`;
     return result;
   }
+
 });
 
 function parseRequest(id: string): {
